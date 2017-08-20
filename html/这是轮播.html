@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <title>轮播</title>
+    <link rel="stylesheet" type="text/css" href="banner.css"/>
+    <link rel="icon" href="drawable/icon.png">
+    <script src="jquery-3.2.1.js"></script>
+
+    <script type="text/javascript">
+        $(function () {
+            var currentItem = 0;//当前item
+            var allCount = 5;//展示的item总数（实际数目减一）
+            var isTouch = false;//鼠标是否选中
+            var intervalTime = '4s';//动画间隔
+            var itemLength = 936;//每个item长度
+            var switchTime = 500;//切换动画时间
+            var itemHeight = 316;//每个item高度
+
+            //根据item大小来设置布局大小，避免更改多处数据
+            $("#div_banner_images").css({"width": itemLength * (allCount + 1) + "px", "height": itemHeight + "px"});
+            $("#div_banner1").css({"width": itemLength + "px", "height": itemHeight + "px"});
+            $("#div_banner_images img").css({"width": itemLength + "px", "height": itemHeight + "px"});
+
+            //鼠标移到banner时候停止轮播
+            $("#div_banner1").mouseenter(function () {
+                isTouch = true;
+            }).mouseleave(function () {
+                isTouch = false;
+            });
+
+            //点击指示器切换banner
+            $("#div_banner1 ul li").click(function () {
+                currentItem = $(this).index();
+                $("#div_banner_images").stop().animate({'left': currentItem * -itemLength + 'px'}, switchTime);//控制偏移量
+                switchPoint();
+            });
+
+            //每次更新指示器
+            function switchPoint() {
+                $("#div_banner1 ul li").each(function (index) {
+                    if (index == currentItem) {
+                        $("ul li").eq(index).children().css({"background": "#ffffff", "border": "1px solid #b9b9b9"});
+                    } else {
+                        $("ul li").eq(index).children().css({"background": "#263238", "border": "1px solid #c9c9c9"});
+                    }
+                });
+            }
+
+
+            //自动轮播
+            $(document).ready(function () {
+                $(this).everyTime(intervalTime, function () {
+                    if (!isTouch) {
+                        toNext();
+                    }
+                });
+            });
+
+            function toNext() {
+                currentItem++;
+                $("#div_banner_images").stop().animate({'left': currentItem * -itemLength + 'px'}, switchTime);//控制偏移量
+                if (currentItem == allCount) {//为最后一个的时候就马上切换到第一个去
+                    currentItem = 0;
+                    $(this).oneTime(switchTime + 100 + "ms", function () {//这里设置一个延迟，当动画完成以后再回到第一个
+                        $("#div_banner_images").stop().animate({'left': currentItem * -itemLength + 'px'}, 1);//回到第一个
+                    });
+                }
+                switchPoint();
+            }
+
+
+            function toLast() {
+                currentItem--;
+                if(currentItem<0){
+                    currentItem=allCount-1;
+                }
+                $("#div_banner_images").stop().animate({'left': currentItem * -itemLength + 'px'}, switchTime);//控制偏移量
+                switchPoint();
+            }
+
+
+            //点击箭头切换页面
+
+            $("#div_action_left").mouseenter(function () {
+                $(this).css("background", "rgba(0, 0, 0, 0.5)");
+                $("#img_arrow_left").css("visibility","visible");
+            });
+
+            $("#div_action_left").mouseleave(function () {
+                $(this).css("background", "rgba(0, 0, 0, 0)");
+                $("#img_arrow_left").css("visibility","hidden");
+            });
+
+            $("#div_action_left").click(function () {
+                toLast();
+            });
+
+            $("#div_action_right").mouseenter(function () {
+                $(this).css("background", "rgba(0, 0, 0, 0.5)");
+                $("#img_arrow_right").css("visibility","visible");
+            });
+
+            $("#div_action_right").mouseleave(function () {
+                $(this).css("background", "rgba(0, 0, 0, 0)");
+                $("#img_arrow_right").css("visibility","hidden");
+            });
+
+            $("#div_action_right").click(function () {
+                toNext();
+            });
+
+
+        })
+    </script>
+
+
+</head>
+
+<body>
+<div id="div_banner1" align="center">
+
+    <div id="div_banner_images">
+        <img src="drawable/bg_banner1.jpg"/>
+        <img src="drawable/bg_banner2.jpg"/>
+        <img src="drawable/bg_banner3.jpg"/>
+        <img src="drawable/bg_banner4.jpg"/>
+        <img src="drawable/bg_banner5.jpg"/>
+        <img src="drawable/bg_banner1.jpg"/>
+    </div>
+    <div id="div_action">
+        <div id="div_action_left">
+            <img src="drawable/ic_arrow_left.svg" class="arrow" id="img_arrow_left">
+        </div>
+
+        <div id="div_action_right">
+            <img src="drawable/ic_arrow_right.svg" class="arrow" id="img_arrow_right">
+        </div>
+
+    </div>
+    <ul>
+        <li>
+            <div class="circular"></div>
+        </li>
+        <li>
+            <div class="circular"></div>
+        </li>
+        <li>
+            <div class="circular"></div>
+        </li>
+        <li>
+            <div class="circular"></div>
+        </li>
+        <li>
+            <div class="circular"></div>
+        </li>
+    </ul>
+
+</div>
+</body>
+</html>
+
+<script>
+    /**
+     * jQuery.timers - Timer abstractions for jQuery
+     * Written by Blair Mitchelmore (blair DOT mitchelmore AT gmail DOT com)
+     * Licensed under the WTFPL (http://sam.zoy.org/wtfpl/).
+     * Date: 2009/02/08
+     *
+     * @author Blair Mitchelmore
+     * @version 1.1.2
+     *
+     **/
+
+    jQuery.fn.extend({
+        everyTime: function (interval, label, fn, times, belay) {
+            return this.each(function () {
+                jQuery.timer.add(this, interval, label, fn, times, belay);
+            });
+        },
+        oneTime: function (interval, label, fn) {
+            return this.each(function () {
+                jQuery.timer.add(this, interval, label, fn, 1);
+            });
+        },
+        stopTime: function (label, fn) {
+            return this.each(function () {
+                jQuery.timer.remove(this, label, fn);
+            });
+        }
+    });
+
+    jQuery.event.special
+
+    jQuery.extend({
+        timer: {
+            global: [],
+            guid: 1,
+            dataKey: "jQuery.timer",
+            regex: /^([0-9]+(?:\.[0-9]*)?)\s*(.*s)?$/,
+            powers: {
+                // Yeah this is major overkill...
+                'ms': 1,
+                'cs': 10,
+                'ds': 100,
+                's': 1000,
+                'das': 10000,
+                'hs': 100000,
+                'ks': 1000000
+            },
+            timeParse: function (value) {
+                if (value == undefined || value == null)
+                    return null;
+                var result = this.regex.exec(jQuery.trim(value.toString()));
+                if (result[2]) {
+                    var num = parseFloat(result[1]);
+                    var mult = this.powers[result[2]] || 1;
+                    return num * mult;
+                } else {
+                    return value;
+                }
+            },
+            add: function (element, interval, label, fn, times, belay) {
+                var counter = 0;
+
+                if (jQuery.isFunction(label)) {
+                    if (!times)
+                        times = fn;
+                    fn = label;
+                    label = interval;
+                }
+
+                interval = jQuery.timer.timeParse(interval);
+
+                if (typeof interval != 'number' || isNaN(interval) || interval <= 0)
+                    return;
+
+                if (times && times.constructor != Number) {
+                    belay = !!times;
+                    times = 0;
+                }
+
+                times = times || 0;
+                belay = belay || false;
+
+                var timers = jQuery.data(element, this.dataKey) || jQuery.data(element, this.dataKey, {});
+
+                if (!timers[label])
+                    timers[label] = {};
+
+                fn.timerID = fn.timerID || this.guid++;
+
+                var handler = function () {
+                    if (belay && this.inProgress)
+                        return;
+                    this.inProgress = true;
+                    if ((++counter > times && times !== 0) || fn.call(element, counter) === false)
+                        jQuery.timer.remove(element, label, fn);
+                    this.inProgress = false;
+                };
+
+                handler.timerID = fn.timerID;
+
+                if (!timers[label][fn.timerID])
+                    timers[label][fn.timerID] = window.setInterval(handler, interval);
+
+                this.global.push(element);
+
+            },
+            remove: function (element, label, fn) {
+                var timers = jQuery.data(element, this.dataKey), ret;
+
+                if (timers) {
+
+                    if (!label) {
+                        for (label in timers)
+                            this.remove(element, label, fn);
+                    } else if (timers[label]) {
+                        if (fn) {
+                            if (fn.timerID) {
+                                window.clearInterval(timers[label][fn.timerID]);
+                                delete timers[label][fn.timerID];
+                            }
+                        } else {
+                            for (var fn in timers[label]) {
+                                window.clearInterval(timers[label][fn]);
+                                delete timers[label][fn];
+                            }
+                        }
+
+                        for (ret in timers[label]) break;
+                        if (!ret) {
+                            ret = null;
+                            delete timers[label];
+                        }
+                    }
+
+                    for (ret in timers) break;
+                    if (!ret)
+                        jQuery.removeData(element, this.dataKey);
+                }
+            }
+        }
+    });
+
+    jQuery(window).bind("unload", function () {
+        jQuery.each(jQuery.timer.global, function (index, item) {
+            jQuery.timer.remove(item);
+        });
+    });
+</script>
